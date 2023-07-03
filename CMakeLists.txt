@@ -1,7 +1,12 @@
-cmake_minimum_required(VERSION 3.10)
-project(i-socket-server)
+cmake_minimum_required(VERSION 2.8.12...3.20)
+project(socket-server)
 
-add_definitions(-D__STDC_NO_ATOMICS__=1)
+include(CheckFunctionExists)
+check_function_exists("atomic_init" HAS_STDC_ATOMICS)
+if (HAS_STDC_ATOMICS)
+else ()
+    add_definitions(-D__STDC_NO_ATOMICS__=1)
+endif ()
 
 set(CMAKE_C_FLAGS "-std=gnu99")
 
