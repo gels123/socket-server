@@ -1,5 +1,5 @@
-socket-server : socket_server.c test.c
-	gcc -g -Wall -o $@ $^ -lpthread
+socket-server : socket_server.c testtcpsvr.c
+	gcc -g -Wall -D__STDC_NO_ATOMICS__ -o $@ $^ -lpthread
 
 clean:
-	rm socket-server
+	rm -f *.o *.so socket-server

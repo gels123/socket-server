@@ -41,26 +41,30 @@ sp_del(int efd, int sock) {
 	epoll_ctl(efd, EPOLL_CTL_DEL, sock , NULL);
 }
 
-static void 
-sp_write(int efd, int sock, void *ud, bool enable) {
+static int
+sp_enable(int efd, int sock, void *ud, bool read_enable, bool write_enable) {
 	struct epoll_event ev;
-	ev.events = EPOLLIN | (enable ? EPOLLOUT : 0);
+	ev.events = (read_enable ? EPOLLIN : 0) | (write_enable ? EPOLLOUT : 0);
 	ev.data.ptr = ud;
-	epoll_ctl(efd, EPOLL_CTL_MOD, sock, &ev);
+	if (epoll_ctl(efd, EPOLL_CTL_MOD, sock, &ev) == -1) {
+		return 1;
+	}
+	return 0;
 }
 
 static int 
 sp_wait(int efd, struct event *e, int max) {
 	struct epoll_event ev[max];
-	int n = epoll_wait(efd , ev, max, -1);
+	int n = epoll_wait(efd, ev, max, -1);
 	int i;
 	for (i=0;i<n;i++) {
 		e[i].s = ev[i].data.ptr;
 		unsigned flag = ev[i].events;
 		e[i].write = (flag & EPOLLOUT) != 0;
 		e[i].read = (flag & EPOLLIN) != 0;
+		e[i].error = (flag & EPOLLERR) != 0;
+		e[i].eof = (flag & EPOLLHUP) != 0;
 	}
-
 	return n;
 }
 
@@ -70,7 +74,6 @@ sp_nonblocking(int fd) {
 	if ( -1 == flag ) {
 		return;
 	}
-
 	fcntl(fd, F_SETFL, flag | O_NONBLOCK);
 }
 
