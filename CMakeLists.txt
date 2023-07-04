@@ -19,3 +19,13 @@ add_executable(testtcpclient
         socket_server.c
         testtcpclient.c)
 target_link_libraries(testtcpclient pthread)
+
+add_executable(testudpserver
+        testudpserver.c
+        socket_server.c)
+target_link_libraries(testudpserver pthread)
+
+add_executable(testdupclient
+        testdupclient.c
+        socket_server.c)
+target_link_libraries(testdupclient pthread)
